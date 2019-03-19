@@ -1,0 +1,80 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9B56FCB0-63B4-404F-8A09-42EF52B53347}") = "WebOTronic.MeshApp", "WebOTronic.MeshApp\WebOTronic.MeshApp.sfaproj", "{239DE6D4-4C74-4D23-9A84-C551E0A7CAD4}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{523BDF71-CFE0-473F-89D6-FBF159323035}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebOTronic.Core", "WebOTronic.Core\WebOTronic.Core.csproj", "{92E8842B-C3CD-4CB6-913C-A0CD3A5E1069}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebOTronic.SignalRFunctionApp", "WebOTronic.SignalRFunctionApp\WebOTronic.SignalRFunctionApp.csproj", "{3A3D0709-CD1C-4813-8530-B4DE89912DC0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebOTronic.GameApp", "WebOTronic.GameApp\WebOTronic.GameApp.csproj", "{AA211074-96BE-4E12-901F-69E98348B4E7}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebOTronic.WebSite", "WebOTronic.WebSite\", "{B7584763-EF0A-49AB-9F6D-B65044FA0CF4}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_64466"
+		Debug.AspNetCompiler.PhysicalPath = "WebOTronic.WebSite\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_64466\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_64466"
+		Release.AspNetCompiler.PhysicalPath = "WebOTronic.WebSite\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_64466\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "64466"
+		SlnRelativePath = "WebOTronic.WebSite\"
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebOTronic.WebApp", "WebOTronic.WebApp\WebOTronic.WebApp.csproj", "{BE616F2B-6AA9-4A9C-944D-DF42BEF81B12}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{239DE6D4-4C74-4D23-9A84-C551E0A7CAD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{239DE6D4-4C74-4D23-9A84-C551E0A7CAD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{239DE6D4-4C74-4D23-9A84-C551E0A7CAD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{239DE6D4-4C74-4D23-9A84-C551E0A7CAD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{523BDF71-CFE0-473F-89D6-FBF159323035}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{523BDF71-CFE0-473F-89D6-FBF159323035}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{523BDF71-CFE0-473F-89D6-FBF159323035}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{523BDF71-CFE0-473F-89D6-FBF159323035}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92E8842B-C3CD-4CB6-913C-A0CD3A5E1069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92E8842B-C3CD-4CB6-913C-A0CD3A5E1069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92E8842B-C3CD-4CB6-913C-A0CD3A5E1069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92E8842B-C3CD-4CB6-913C-A0CD3A5E1069}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A3D0709-CD1C-4813-8530-B4DE89912DC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A3D0709-CD1C-4813-8530-B4DE89912DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A3D0709-CD1C-4813-8530-B4DE89912DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A3D0709-CD1C-4813-8530-B4DE89912DC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA211074-96BE-4E12-901F-69E98348B4E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA211074-96BE-4E12-901F-69E98348B4E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA211074-96BE-4E12-901F-69E98348B4E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA211074-96BE-4E12-901F-69E98348B4E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7584763-EF0A-49AB-9F6D-B65044FA0CF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7584763-EF0A-49AB-9F6D-B65044FA0CF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7584763-EF0A-49AB-9F6D-B65044FA0CF4}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7584763-EF0A-49AB-9F6D-B65044FA0CF4}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{BE616F2B-6AA9-4A9C-944D-DF42BEF81B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE616F2B-6AA9-4A9C-944D-DF42BEF81B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE616F2B-6AA9-4A9C-944D-DF42BEF81B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE616F2B-6AA9-4A9C-944D-DF42BEF81B12}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D02DD7D7-764A-4F53-99F3-05C2CCCF12A0}
+	EndGlobalSection
+EndGlobal

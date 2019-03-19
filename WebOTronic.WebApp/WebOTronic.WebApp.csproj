@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UserSecretsId>aspnet-WebOTronic.WebApp-1B5FB5D2-A4DA-4E14-A8F7-2D59EDC5DAA3</UserSecretsId>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
+    <IsSFAppServiceProject>true</IsSFAppServiceProject>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\js\dist\**" />
+    <Content Remove="wwwroot\js\dist\**" />
+    <EmbeddedResource Remove="wwwroot\js\dist\**" />
+    <None Remove="wwwroot\js\dist\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="cert.pfx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="cert.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ElCamino.AspNetCore.Identity.AzureTable" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-10200" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

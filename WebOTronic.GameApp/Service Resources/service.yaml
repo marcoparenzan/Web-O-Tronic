@@ -1,0 +1,28 @@
+application:
+  schemaVersion: 1.0.0-preview2
+  name: WebOTronicMeshApp
+  properties:
+    services:
+    - name: WebOTronicGameApp
+      properties:
+        description: WebOTronic.GameApp description.
+        osType: Windows
+        codePackages:
+        - name: WebOTronicGameApp
+          image: webotronicgameapp:dev
+          endpoints:
+          - name: WebOTronicGameAppListener
+            port: 5001
+          environmentVariables:
+          - name: ASPNETCORE_URLS
+            value: https://+:5001
+          resources:
+            requests:
+              cpu: 1
+              memoryInGB: 1
+        replicaCount: 1
+        networkRefs:
+        - name: WebOTronicMeshAppNetwork
+          endpointRefs:
+          - name: WebOTronicGameAppListener
+

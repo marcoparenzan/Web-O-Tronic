@@ -1,0 +1,90 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "defaultValue": "westeurope",
+            "type": "String",
+            "metadata": {
+                "description": "Location of the resources."
+            }
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-07-01-preview",
+            "name": "WebOTronicMeshAppNetwork",
+            "type": "Microsoft.ServiceFabricMesh/networks",
+            "location": "[parameters('location')]",
+            "dependsOn": [],
+            "properties": {
+              "description": "WebOTronicMeshAppNetwork description.",
+              "addressPrefix": "10.0.0.4/22",
+              "ingressConfig": {
+                "layer4": [
+                  {
+                    "name": "Ingress",
+                    "publicPort": "5001",
+                    "applicationName": "WebOTronicMeshApp",
+                    "serviceName": "WebOTronicWebApp",
+                    "endpointName": "WebOTronicWebAppListener"
+                  }
+                ]
+              }
+            }
+        },
+        {
+            "type": "Microsoft.ServiceFabricMesh/applications",
+            "name": "WebOTronicMeshApp",
+            "apiVersion": "2018-07-01-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+                "services": [
+                    {
+                        "name": "WebOTronicWebApp",
+                        "properties": {
+                            "description": "WebOTronic.WebApp description.",
+                            "osType": "Windows",
+                            "codePackages": [
+                                {
+                                    "name": "WebOTronicWebApp",
+                                    "image": "marcoparenzandemos.azurecr.io/webotronicwebapp:20180914143730",
+                                    "endpoints": [
+                                        {
+                                            "name": "WebOTronicWebAppListener",
+                                            "port": 5001
+                                        }
+                                    ],
+                                    "environmentVariables": [
+                                        {
+                                            "name": "ASPNETCORE_URLS",
+                                            "value": "https://+:5001"
+                                        }
+                                    ],
+                                    "resources": {
+                                        "requests": {
+                                            "cpu": 1,
+                                            "memoryInGB": 1
+                                        }
+                                    },
+                                    "imageRegistryCredential": {
+                                        "server": "marcoparenzandemos.azurecr.io",
+                                        "username": "marcoparenzandemos",
+                                        "password": "+lOjYQGFsRdJO7Sdje=WLGW7flE0+JJP"
+                                    }
+                                }
+                            ],
+                            "replicaCount": 1,
+                            "networkRefs": [
+                                {
+                                    "name": "[resourceId('Microsoft.ServiceFabricMesh/networks', 'WebOTronicMeshAppNetwork')]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "dependsOn": []
+        }
+    ]
+}

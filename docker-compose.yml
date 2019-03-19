@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  webotronic.webapp:
+    image: ${DOCKER_REGISTRY}webotronicgameapp
+    build:
+      context: .
+      dockerfile: WebOTronic.GameApp\Dockerfile

@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web-O-Tronic/Identity</title>
+
+    <link href="/css/webotronic.css" rel="stylesheet" />
+
+</head>
+<body style="margin:0px; padding-top:10px; text-align:center; vertical-align:middle;">
+    <div class="canvas">
+
+        <h2>Web-O-Tronic/Identity</h2>
+        <div>
+            <div id="label">Sign-in with Microsoft Azure AD B2C</div>
+            <button id="auth" onclick="login()">Login</button>
+            <pre id="response" class="response"></pre>
+        </div>
+
+    </div>
+
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.1.1/js/msal.min.js"></script>
+
+    <script>
+
+        "use strict";
+
+        // The current application coordinates were pre-registered in a B2C tenant.
+        var applicationConfig = {
+            clientID: "08abfa53-6123-408b-a486-580df5f8f78d",
+            authority: "https://webotronic.b2clogin.com/webotronic.onmicrosoft.com/b2c_1_storageportal",
+            b2cScopes: ["https://webotronic.onmicrosoft.com/StoragePortal/user_impersonation"],
+            webApi: document.location.href // = "https://localhost:44371/signalr.html",
+        };
+
+        var clientApplication = new Msal.UserAgentApplication(applicationConfig.clientID, applicationConfig.authority, function (errorDesc, token, error, tokenType) {
+            // Called after loginRedirect or acquireTokenPopup
+        });
+
+        function prepare() {
+
+            document.user = clientApplication.getUser();
+            updateUI(document.user);
+
+        }
+
+        function login() {
+            clientApplication.loginPopup(applicationConfig.b2cScopes).then(function (idToken) {
+                clientApplication.acquireTokenSilent(applicationConfig.b2cScopes).then(function (accessToken) {
+                    prepare();
+                }, function (error) {
+                    clientApplication.acquireTokenPopup(applicationConfig.b2cScopes).then(function (accessToken) {
+                        prepare();
+                    }, function (error) {
+                        logMessage("Error acquiring the popup:\n" + error);
+                    });
+                })
+            }, function (error) {
+                logMessage("Error during login:\n" + error);
+            });
+        }
+
+        function updateUI(user) {
+            logMessage("User '" + user.name + "' logged-in");
+            var authButton = document.getElementById('auth');
+            authButton.innerHTML = 'logout';
+            authButton.setAttribute('onclick', 'logout();');
+            var label = document.getElementById('label');
+            label.innerText = "Hello " + user.name;
+        }
+
+        function logout() {
+            // Removes all sessions, need to call AAD endpoint to do full logout
+            clientApplication.logout();
+        }
+
+        function logMessage(s) {
+            document.body.querySelector('.response').appendChild(document.createTextNode('\n' + s));
+        }
+
+    </script>
+
+</body>
+</html>

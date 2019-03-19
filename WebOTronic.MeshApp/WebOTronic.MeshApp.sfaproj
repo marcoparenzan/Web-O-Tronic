@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.SFApp.Sdk">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>239de6d4-4c74-4d23-9a84-c551e0a7cad4</ProjectGuid>
+    <SFApplicationProjectVersion>2.0</SFApplicationProjectVersion>
+    <SFApplicationToolingVersion>0.9.0.0</SFApplicationToolingVersion>
+  </PropertyGroup>
+</Project>

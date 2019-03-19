@@ -1,0 +1,256 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+    bool imLeftPaddle = string.IsNullOrWhiteSpace(ViewBag.leftpaddle);
+    bool imRightPaddle = !imLeftPaddle;
+}
+@section head {
+    <link href="~/css/webotronic.css" rel="stylesheet" />
+}
+<div class="canvas">
+    @if (imLeftPaddle)
+    {
+        <h1>
+            Copy this
+            <a href="#" id="playlink">link</a> and send it to a friend to start playing, or paste a link received from a friend to start playing.
+            <br />
+            Waiting to start playing...
+        </h1>
+    }
+    else
+    {
+        <h1>
+            Waiting to start playing...
+        </h1>
+    }
+</div>
+@section scripts {
+
+    <script src="/assets/js/kontra.js"></script>
+    <script src="/assets/js/webotronic.js"></script>
+    <script type="text/javascript" src="~/js/signalr/browser/signalr.js"></script>
+    <script>
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl('/remoteplay2')
+            .build();
+
+        var imLeftPaddle = @imLeftPaddle.ToString().ToLower();
+        var imRightPaddle = @imRightPaddle.ToString().ToLower();
+
+        var profile = {};
+
+        connection.start()
+            .then(function (xxx) {
+                if (imRightPaddle) {
+                    connection.invoke("Register" , '@ViewBag.leftpaddle').catch(function (error) {  //
+                        console.error(error.message);
+                    });
+                }
+            })
+            .catch(function (error) {
+                console.error(error.message);
+            });
+
+        connection.on('profile', function (args) {
+            profile = args;
+            if (imLeftPaddle) {
+                document.getElementById("playlink").href = '@Url.Action("Game", new { leftpaddle = "__leftpaddle__" })'.replace("__leftpaddle__", profile.userId);
+            }
+        });
+
+        connection.on('begin', function (args) {
+            startGame(args.world);
+        });
+
+        function startGame(remoteWorld) {
+
+            document.getElementsByClassName("canvas")[0].innerHTML = "<canvas id='canv'></canvas>";
+
+            kontra.init();
+
+            kontra.canvas.width = window.innerWidth - 50;
+            kontra.canvas.height = window.innerHeight - 50;
+
+            kontra.assets.load("/assets/sprites/leftpaddle.png", "/assets/sprites/rightpaddle.png", "/assets/sprites/ball.png").then(function () {
+
+                world = new World({
+                    x1: remoteWorld.x1,
+                    y1: remoteWorld.y1,
+                    x2: remoteWorld.x2,
+                    y2: remoteWorld.y2,
+                    scoreText: () => (leftpaddle.score + "  " + rightpaddle.score)
+                });
+
+                //connection.on('log', function (args) {
+                //    console.log("log: " + args);
+                //});
+
+                connection.on('gameupdate', function (args) {
+                    if (args.leftPaddle !== undefined) { 
+                        leftpaddle.position = args.leftPaddle.position;
+                        leftpaddle.score = args.leftPaddle.score;
+                    }
+                    if (args.rightPaddle !== undefined) {
+                        rightpaddle.position = args.rightPaddle.position;
+                        rightpaddle.score = args.rightPaddle.score;
+                    }
+                    if (args.ball !== undefined) {
+                        ball.position = new XYVector(args.ball.position.x, args.ball.position.y);
+                        ball.speed = new PolarVector(args.ball.speed.mag, args.ball.speed.angle);
+                        ball.state = args.ball.state;
+                        console.log("state=" + args.ball.state + " x=" + args.ball.position.x + " y=" + args.ball.position.y + " sx=" + args.ball.speed.x + " sy=" + args.ball.speed.y);
+                    }
+                });
+
+                var el = document.getElementById("canv");
+
+                //var handleMove = function (t) {
+                //    var x = t.clientX;
+                //    var y = t.clientY;
+                //    if (x < kontra.canvas.width / 2) {
+                //        leftpaddle.position.x = world.xfrompixel(x);
+                //        leftpaddle.position.y = world.yfrompixel(y);
+                //    }
+                //    else {
+                //        rightpaddle.position.x = world.xfrompixel(x);
+                //        rightpaddle.position.y = world.yfrompixel(y);
+                //    }
+                //};
+
+                //el.addEventListener("touchstart", function (e) {
+
+                //    e.preventDefault();
+
+                //    if (ball.state === "running") {
+                //        handleMove(e.targetTouches[0]);
+                //        if (e.targetTouches.length >= 2) handleMove(e.targetTouches[1]);
+                //    }
+                //    else if (ball.state === "stopped") {
+                //        connection.invoke("Run");
+                //    }
+
+                //}, false);
+                //el.addEventListener("touchmove", function (e) {
+
+                //    e.preventDefault();
+
+                //    if (ball.state === "running") {
+                //        handleMove(e.targetTouches[0]);
+                //        if (e.targetTouches.length >= 2) handleMove(e.targetTouches[1]);
+                //    }
+
+                //}, false);
+
+                let leftpaddle = new Paddle({
+                    width: world.xfrompixel(world.rescalex(50)),
+                    height: world.yfrompixel(world.rescaley(160)),
+                    boundary: {
+                        x1: world.x1,
+                        y1: world.y1,
+                        x2: (world.x2 + world.x1) / 2,
+                        y2: world.y2,
+                    },
+                    restartposition: new XYVector(world.xfrompixel(20), world.xfrompixel(kontra.canvas.height / 2)),
+                    imageName: "leftpaddle"
+                });
+
+                let rightpaddle = new Paddle({
+                    width: world.xfrompixel(world.rescalex(50)),
+                    height: world.yfrompixel(world.rescaley(160)),
+                    boundary: {
+                        x1: (world.x2 + world.x1) / 2,
+                        y1: world.y1,
+                        x2: world.x2,
+                        y2: world.y2,
+                    },
+                    restartposition: new XYVector(world.xfrompixel(kontra.canvas.width - 20), world.yfrompixel(kontra.canvas.height / 2)),
+                    imageName: "rightpaddle"
+                });
+
+                let ball = new Ball({
+                    movement: world.rescalex(8),
+                    boundary: {
+                        x1: world.x1,
+                        y1: world.y1,
+                        x2: world.x2,
+                        y2: world.y2,
+                    },
+                    imageName: "ball"
+                });
+
+                var spacePressed = false;
+
+                let loop = kontra.gameLoop({  // create the main game loop
+                    update: function () {        // update the game state
+                        if (ball.state === "running") {
+
+                            if (imLeftPaddle) {
+
+                                if (kontra.keys.pressed('x')) {
+                                    connection.invoke("NotifyLeftPaddle", "left");
+                                }
+                                else if (kontra.keys.pressed('c')) {
+                                    connection.invoke("NotifyLeftPaddle", "right");
+                                }
+
+                                if (kontra.keys.pressed('a')) {
+                                    connection.invoke("NotifyLeftPaddle", "up");
+                                }
+                                else if (kontra.keys.pressed('z')) {
+                                    connection.invoke("NotifyLeftPaddle", "down");
+                                }
+                            }
+                            else if (imRightPaddle) {
+
+                                if (kontra.keys.pressed('b')) {
+                                    connection.invoke("NotifyRightPaddle", "left");
+                                }
+                                else if (kontra.keys.pressed('n')) {
+                                    connection.invoke("NotifyRightPaddle", "right");
+                                }
+
+                                if (kontra.keys.pressed('k')) {
+                                    connection.invoke("NotifyRightPaddle", "up");
+                                }
+                                else if (kontra.keys.pressed('m')) {
+                                    connection.invoke("NotifyRightPaddle", "down");
+                                }
+                            }
+
+                            world.update();
+                            leftpaddle.update();
+                            rightpaddle.update();
+                            ball.update();
+
+                            if (spacePressed && !kontra.keys.pressed('space')) {
+                                spacePressed = false;
+                            }
+                        }
+                        else if (ball.state === "stopped") {
+                            if (kontra.keys.pressed('space')) {
+                                if (!spacePressed) { 
+                                    spacePressed = true;
+                                    connection.invoke("Run");
+                                }
+                            }
+                            else if (spacePressed) {
+                                spacePressed = false;
+                            }
+                        }
+                    },
+                    render: function () {        // render the game state
+                        world.render();
+                        leftpaddle.render();
+                        rightpaddle.render();
+                        ball.render();
+                    }
+                });
+
+                loop.start();    // start the game
+
+            });
+
+        }
+
+    </script>
+}

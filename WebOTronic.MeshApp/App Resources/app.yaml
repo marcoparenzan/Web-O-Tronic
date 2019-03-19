@@ -1,0 +1,6 @@
+application:
+  schemaVersion: 1.0.0-preview2
+  name: WebOTronicMeshApp
+  properties:
+    description: This is a distributed and serverless version of Pong
+

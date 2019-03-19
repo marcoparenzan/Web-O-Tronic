@@ -1,0 +1,13 @@
+﻿.playfield {
+    text-align: center;
+    font-family: pong;
+}
+
+canvas {
+    background: #003366;
+}
+
+@font-face {
+    font-family: "pong";
+    src: url("/assets/fonts/pong.woff") format('woff');
+}

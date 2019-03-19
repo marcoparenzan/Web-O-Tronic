@@ -1,0 +1,18 @@
+## Visual Studio SFApp Publish Profile ##
+vsSFAppPublishProfile:
+  schemaVersion: 1.0.0-preview2
+  resourceGroupName: webotronic
+  subscription:
+    id: 
+    name: Microsoft Azure Sponsorship
+    tenant: &o0
+      id: 
+      uniqueId: 
+  location:
+    name: eastus
+    displayName: East US
+  containerRegistry:
+    serverName: 
+    userName: 
+    resourceId: 
+    tenant: *o0

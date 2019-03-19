@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web-O-Tronic/Remote</title>
+
+    <link href="/css/webotronic.css" rel="stylesheet" />
+
+</head>
+<body style="margin:0px; padding-top:10px; text-align:center; vertical-align:middle;">
+    <div class="canvas">
+
+        <h2>Web-O-Tronic/Remote</h2>
+        <div>
+            <div id="label">Sign-in with Microsoft Azure AD B2C</div>
+            <button id="auth" onclick="login()">Login</button>
+            <pre id="response" class="response"></pre>
+        </div>
+
+        <!--<h1>
+            Waiting to start playing...
+        </h1>-->
+    </div>
+
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.1.1/js/msal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.min.js"></script>
+    <script src="/assets/js/kontra.js"></script>
+    <script src="/assets/js/webotronic.js"></script>
+    <script type="text/javascript" src="/js/signalr/browser/signalr.js"></script>
+
+    <script>
+
+        "use strict";
+
+        var imLeftPaddle = document.location.href.indexOf("leftpaddle") < 0;
+        var imRightPaddle = document.location.href.indexOf("leftpaddle") > 0;
+        var leftPaddleId = undefined;
+        var rightPaddleId = undefined;
+
+        var remoteUrl = "https://1.1.1.1";
+        if (document.location.href.indexOf("localhost") > 0) {
+            // chrome://flags/#allow-insecure-localhost
+            remoteUrl = "https://localhost:5002";
+        }
+        var invokeRemote = (method, args) => {
+            var headers = {
+            };
+
+            headers["Access-Control-Allow-Origin"] = "*";
+            if (imLeftPaddle) {
+                headers["x-ms-client-principal-id"] = leftPaddleId;
+            }
+            else if (imRightPaddle) {
+                headers["x-ms-client-principal-id"] = rightPaddleId;
+            }
+
+            return axios.post(`${remoteUrl}/api/${method}`, JSON.stringify(args) || null, {
+                headers: headers
+            });
+        };
+
+        var signalr_connection = undefined;
+
+        // The current application coordinates were pre-registered in a B2C tenant.
+        var applicationConfig = {
+            clientID: "08abfa53-6123-408b-a486-580df5f8f78d",
+            authority: "https://webotronic.b2clogin.com/webotronic.onmicrosoft.com/b2c_1_storageportal",
+            b2cScopes: ["https://webotronic.onmicrosoft.com/StoragePortal/user_impersonation"],
+            webApi: document.location.href // = "https://localhost:44371/signalr.html",
+        };
+
+        var clientApplication = new Msal.UserAgentApplication(applicationConfig.clientID, applicationConfig.authority, function (errorDesc, token, error, tokenType) {
+            // Called after loginRedirect or acquireTokenPopup
+        });
+
+        function prepare() {
+
+            document.user = clientApplication.getUser();
+            updateUI(document.user);
+
+            if (imLeftPaddle) {
+                var inviteUrl = document.location.href + "?leftpaddle=" + document.user.userIdentifier;
+                var el = document.getElementById("response");
+                el.innerHTML = 'Copy this <a href="' + inviteUrl + '">link</a> and send it to a friend to start playing, or paste a link received from a friend to start playing.<br/>Waiting to start playing...';
+
+                leftPaddleId = document.user.userIdentifier;
+                rightPaddleId = undefined;
+            }
+            else if (imRightPaddle) {
+                leftPaddleId = document.location.href.substr(document.location.href.indexOf("leftpaddle") + 11);
+                rightPaddleId = document.user.userIdentifier;
+            }
+
+            //invokeRemote("GetSignalRInfo")
+            //    .then(resp => {
+            signalr_connection = new signalR.HubConnectionBuilder()
+                //.withUrl(resp.data.url, {
+                .withUrl("https://localhost:5002/client")
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            signalr_connection.on('begin', function (lId, rId, world) {
+                leftPaddleId = lId;
+                rightPaddleId = rId;
+                startGame(world);
+            });
+
+            signalr_connection.start()
+                .then(function (xxx) {
+                    if (imRightPaddle) {
+                        signalr_connection.invoke("PlayWith", {
+                            leftPaddle: leftPaddleId,
+                            rightPaddle: rightPaddleId
+                        }).catch(function (error) {  //
+                            console.error(error.message);
+                        });
+                    }
+                })
+                .catch(function (error) {
+                    console.error(error.message);
+                });
+
+                //});
+        }
+
+        function login() {
+            clientApplication.loginPopup(applicationConfig.b2cScopes).then(function (idToken) {
+                clientApplication.acquireTokenSilent(applicationConfig.b2cScopes).then(function (accessToken) {
+                    prepare();
+                }, function (error) {
+                    clientApplication.acquireTokenPopup(applicationConfig.b2cScopes).then(function (accessToken) {
+                        prepare();
+                    }, function (error) {
+                        logMessage("Error acquiring the popup:\n" + error);
+                    });
+                })
+            }, function (error) {
+                logMessage("Error during login:\n" + error);
+            });
+        }
+
+        function updateUI(user) {
+            logMessage("User '" + user.name + "' logged-in");
+            var authButton = document.getElementById('auth');
+            authButton.innerHTML = 'logout';
+            authButton.setAttribute('onclick', 'logout();');
+            var label = document.getElementById('label');
+            label.innerText = "Hello " + user.name;
+        }
+
+        function logout() {
+            // Removes all sessions, need to call AAD endpoint to do full logout
+            clientApplication.logout();
+        }
+
+        function logMessage(s) {
+            document.body.querySelector('.response').appendChild(document.createTextNode('\n' + s));
+        }
+
+        function startGame() {
+
+            document.getElementsByClassName("canvas")[0].innerHTML = "<canvas id='canv'></canvas>";
+
+            kontra.init();
+
+            kontra.canvas.width = window.innerWidth - 50;
+            kontra.canvas.height = window.innerHeight - 50;
+
+            kontra.assets.load("/assets/sprites/leftpaddle.png", "/assets/sprites/rightpaddle.png", "/assets/sprites/ball.png").then(function () {
+
+                world = new World({
+                    x1: remoteWorld.x1,
+                    y1: remoteWorld.y1,
+                    x2: remoteWorld.x2,
+                    y2: remoteWorld.y2,
+                    scoreText: () => (leftpaddle.score + "  " + rightpaddle.score)
+                });
+
+                signalr_connection.on('gameupdate', function (args) {
+                    if (args.leftPaddle !== undefined) {
+                        leftpaddle.position = args.leftPaddle.position;
+                        leftpaddle.score = args.leftPaddle.score;
+                    }
+                    if (args.rightPaddle !== undefined) {
+                        rightpaddle.position = args.rightPaddle.position;
+                        rightpaddle.score = args.rightPaddle.score;
+                    }
+                    if (args.ball !== undefined) {
+                        ball.position = new XYVector(args.ball.position.x, args.ball.position.y);
+                        ball.speed = new PolarVector(args.ball.speed.mag, args.ball.speed.angle);
+                        ball.state = args.ball.state;
+                        console.log("state=" + args.ball.state + " x=" + args.ball.position.x + " y=" + args.ball.position.y + " sx=" + args.ball.speed.x + " sy=" + args.ball.speed.y);
+                    }
+                });
+
+                var el = document.getElementById("canv");
+
+                let leftpaddle = new Paddle({
+                    width: world.xfrompixel(world.rescalex(50)),
+                    height: world.yfrompixel(world.rescaley(160)),
+                    boundary: {
+                        x1: world.x1,
+                        y1: world.y1,
+                        x2: (world.x2 + world.x1) / 2,
+                        y2: world.y2,
+                    },
+                    restartposition: new XYVector(world.xfrompixel(20), world.xfrompixel(kontra.canvas.height / 2)),
+                    imageName: "leftpaddle"
+                });
+
+                let rightpaddle = new Paddle({
+                    width: world.xfrompixel(world.rescalex(50)),
+                    height: world.yfrompixel(world.rescaley(160)),
+                    boundary: {
+                        x1: (world.x2 + world.x1) / 2,
+                        y1: world.y1,
+                        x2: world.x2,
+                        y2: world.y2,
+                    },
+                    restartposition: new XYVector(world.xfrompixel(kontra.canvas.width - 20), world.yfrompixel(kontra.canvas.height / 2)),
+                    imageName: "rightpaddle"
+                });
+
+                let ball = new Ball({
+                    movement: world.rescalex(8),
+                    boundary: {
+                        x1: world.x1,
+                        y1: world.y1,
+                        x2: world.x2,
+                        y2: world.y2,
+                    },
+                    imageName: "ball"
+                });
+
+                var spacePressed = false;
+
+                let loop = kontra.gameLoop({  // create the main game loop
+                    update: function () {        // update the game state
+                        if (ball.state === "running") {
+
+                            if (imLeftPaddle) {
+
+                                if (kontra.keys.pressed('x')) {
+                                    signalr_connection.invoke("NotifyLeftPaddle", "left");
+                                }
+                                else if (kontra.keys.pressed('c')) {
+                                    signalr_connection.invoke("NotifyLeftPaddle", "right");
+                                }
+
+                                if (kontra.keys.pressed('a')) {
+                                    signalr_connection.invoke("NotifyLeftPaddle", "up");
+                                }
+                                else if (kontra.keys.pressed('z')) {
+                                    signalr_connection.invoke("NotifyLeftPaddle", "down");
+                                }
+                            }
+                            else if (imRightPaddle) {
+
+                                if (kontra.keys.pressed('b')) {
+                                    signalr_connection.invoke("NotifyRightPaddle", "left");
+                                }
+                                else if (kontra.keys.pressed('n')) {
+                                    signalr_connection.invoke("NotifyRightPaddle", "right");
+                                }
+
+                                if (kontra.keys.pressed('k')) {
+                                    signalr_connection.invoke("NotifyRightPaddle", "up");
+                                }
+                                else if (kontra.keys.pressed('m')) {
+                                    signalr_connection.invoke("NotifyRightPaddle", "down");
+                                }
+                            }
+
+                            world.update();
+                            leftpaddle.update();
+                            rightpaddle.update();
+                            ball.update();
+
+                            if (spacePressed && !kontra.keys.pressed('space')) {
+                                spacePressed = false;
+                            }
+                        }
+                        else if (ball.state === "stopped") {
+                            if (kontra.keys.pressed('space')) {
+                                if (!spacePressed) {
+                                    spacePressed = true;
+                                    signalr_connection.invoke("Run");
+                                }
+                            }
+                            else if (spacePressed) {
+                                spacePressed = false;
+                            }
+                        }
+                    },
+                    render: function () {        // render the game state
+                        world.render();
+                        leftpaddle.render();
+                        rightpaddle.render();
+                        ball.render();
+                    }
+                });
+
+                loop.start();    // start the game
+
+            });
+
+
+        }
+
+    </script>
+
+</body>
+</html>
